@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>StickyFlow · 流笺</title>
+    <meta name="description" content="365张年度限定治愈系流笺 — 不可逆的纸笔记录，全物理拟物手势交互，极真跨端通知与流体UI气象。">
+    
+    <!-- Open Graph / 社交媒体分享卡片高定配置 (微信/Discord/Telegram等) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stickyflow-liujian.vercel.app/">
+    <meta property="og:title" content="StickyFlow · 流笺">
+    <meta property="og:description" content="365张年度限定治愈系流笺 — 不可逆的纸笔记录，全物理拟物手势交互，极真跨端通知与流体UI气象。">
+    <meta property="og:image" content="https://stickyflow-liujian.vercel.app/logo.png">
+
+    <!-- Twitter Card 社交媒体预览卡片 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://stickyflow-liujian.vercel.app/">
+    <meta name="twitter:title" content="StickyFlow · 流笺">
+    <meta name="twitter:description" content="365张年度限定治愈系流笺 — 不可逆的纸笔记录，全物理拟物手势交互，极真跨端通知与流体UI气象。">
+    <meta name="twitter:image" content="https://stickyflow-liujian.vercel.app/logo.png">
+    
+    <!-- PWA / iOS standalone Web App 元配置 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="StickyFlow">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Ma+Shan+Zheng&family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="overflow-hidden select-none" style="font-family:'Inter','Noto Sans SC',sans-serif">
+
+    <!-- Z999: 光遇风 · 毛笔中文开场动画 -->
+    <div id="splash-screen">
+      <div class="splash-content">
+        <h1 class="splash-text">
+          <span class="en">StickyFlow</span>
+          <span class="dot">·</span>
+          <span class="cn">流笺</span>
+        </h1>
+        <div class="splash-hint">请轻轻抚触屏幕，开启今日流笺之旅...</div>
+      </div>
+    </div>
+
+    <!-- 疗愈入场音效 -->
+    <audio id="splash-sound" preload="auto">
+      <source src="StickFlow_Track2(GlassBloom).MP3" type="audio/mpeg">
+    </audio>
+
+    <!-- 背景音乐 -->
+    <audio id="bg-music" loop preload="auto">
+      <source src="Glass Bloom x Glass Bloom.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Z0: 三层径向渐变流体漂移背景 (滚动卷轴式) -->
+    <div id="fluid-bg">
+        <div id="fluid-bg-strip">
+            <div class="bg-slide ice-inspiration"></div>
+            <div class="bg-slide warm-oat"></div>
+            <div class="bg-slide fog-blue"></div>
+            <div class="bg-slide spring-green"></div>
+            <div class="bg-slide minimal-white"></div>
+            <div class="bg-slide deep-drift"></div>
+            <!-- 6. 自定义双层玻璃背景层 -->
+            <div class="bg-slide custom-glass">
+                <!-- 1. 最底层：环境图片 -->
+                <div id="custom-bg-image"></div>
+                
+                <!-- 2. 中底层：窗外飘落的雨丝粒子 (在玻璃板后，受毛玻璃朦胧柔焦) -->
+                <div id="custom-bg-weather-back">
+                    <canvas id="weather-canvas-back"></canvas>
+                    <div id="weather-lightning-flash"></div>
+                </div>
+                
+                <!-- 3. 中层：毛玻璃/通透玻璃材质板 -->
+                <div id="custom-bg-glass" class="frosted"></div>
+                
+                <!-- 4. 最顶层：贴在玻璃表面滑落的流体水滴 (在玻璃板前，100% 晶莹清晰) -->
+                <div id="custom-bg-weather-front">
+                    <canvas id="weather-canvas-front"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Z90: 左上角 APP LOGO 与治愈系徽章 -->
+    <div class="app-logo-badge" id="app-logo-badge">
+        <span class="app-title">StickyFlow · 流笺</span>
+    </div>
+
+    <!-- Z10: 顶部时光贴板 (默认隐藏，上拉露出) -->
+    <section id="sticky-board">
+        <div id="board-header">
+            <span class="board-title"></span>
+            <span id="counter-display" style="display: none;">0 / 365</span>
+        </div>
+        <div id="board-scroll">
+            <div class="board-empty">暂无便签记录</div>
+        </div>
+        <div id="board-close-handle" title="收起贴板">
+            <div class="handle-bar"></div>
+        </div>
+    </section>
+
+    <!-- Z15: 贴板唤出指示器 -->
+    <div id="board-toggle" title="查看时光贴板">
+        <div class="toggle-dot"></div>
+        <div class="toggle-dot"></div>
+        <div class="toggle-dot"></div>
+    </div>
+
+    <!-- Z30: 中央 Sticky Pad 便利贴主纸 (厚厚一叠作为底座) -->
+    <div id="sticky-pad">
+        <!-- 3D 纸张叠层 (静止叠纸，共 21 层，形成超厚拟物便利贴) -->
+        <div class="stack-sheet sheet-21"></div>
+        <div class="stack-sheet sheet-20"></div>
+        <div class="stack-sheet sheet-19"></div>
+        <div class="stack-sheet sheet-18"></div>
+        <div class="stack-sheet sheet-17"></div>
+        <div class="stack-sheet sheet-16"></div>
+        <div class="stack-sheet sheet-15"></div>
+        <div class="stack-sheet sheet-14"></div>
+        <div class="stack-sheet sheet-13"></div>
+        <div class="stack-sheet sheet-12"></div>
+        <div class="stack-sheet sheet-11"></div>
+        <div class="stack-sheet sheet-10"></div>
+        <div class="stack-sheet sheet-9"></div>
+        <div class="stack-sheet sheet-8"></div>
+        <div class="stack-sheet sheet-7"></div>
+        <div class="stack-sheet sheet-6"></div>
+        <div class="stack-sheet sheet-5"></div>
+        <div class="stack-sheet sheet-4"></div>
+        <div class="stack-sheet sheet-3"></div>
+        <div class="stack-sheet sheet-2"></div>
+        <div class="stack-sheet sheet-1"></div>
+        
+        <!-- 最前面第一张活动便签 (可拖拽、剥离、飞走) -->
+        <div id="active-sheet">
+            <div id="pad-paper"></div>
+            <canvas id="draw-canvas"></canvas>
+            <div id="pad-text-ghost" class="pad-text-layer" aria-hidden="true"></div>
+            <div id="pad-text-editor" class="pad-text-layer" contenteditable="true" spellcheck="false" data-placeholder="点击这里开始打字..."></div>
+            <div id="pad-fold"></div>
+            <div id="pad-page-number">NO. 001</div>
+        </div>
+
+        <!-- 新的一叠便签激活按钮 (365张写完后显现) -->
+        <button id="new-pad-btn" class="hidden">
+            <!-- <img src="logo.jpg" alt="StickyFlow Logo" class="new-pad-btn-img"> -->
+            <span class="new-pad-btn-text">✨ 拆开全新流笺贴</span>
+        </button>
+    </div>
+
+    <!-- Z25: 拖拽方向提示 -->
+    <div id="drag-hint-up" class="drag-hint">
+        <span>↑ 上拉保存到贴板</span>
+    </div>
+    <div id="drag-hint-down" class="drag-hint">
+        <span>↓ 下拉撕毁销毁</span>
+    </div>
+
+    <!-- Z40: 编辑态毛玻璃遮罩 -->
+    <div id="overlay"></div>
+
+
+
+    <!-- Z60: 右侧毛玻璃工具侧边栏 -->
+    <aside id="sidebar">
+        <!-- 编辑模式 -->
+        <div class="tool-section">
+            <div class="tool-label">编辑模式</div>
+            <div id="tool-mode-btns" class="tool-mode-btns">
+                <button class="mode-btn active" data-mode="text" title="打字模式">
+                    ⌨️ <span>打字</span>
+                </button>
+                <button class="mode-btn" data-mode="brush" title="画笔模式">
+                    ✏️ <span>画笔</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 笔刷粗细 -->
+        <div class="tool-section" id="brush-size-section">
+            <div class="tool-label">笔刷粗细</div>
+            <div class="brush-size-control">
+                <input type="range" id="brush-size-slider" min="1" max="20" value="3" step="1">
+                <div id="brush-preview" class="brush-preview">
+                    <span class="brush-dot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 颜色选取 -->
+        <div class="tool-section">
+            <div class="tool-label">颜色</div>
+            <div id="color-palette" class="color-palette">
+                <button class="color-btn active" data-color="#1f2937" style="background:#1f2937" title="深墨"></button>
+                <button class="color-btn" data-color="#dc2626" style="background:#dc2626" title="朱红"></button>
+                <button class="color-btn" data-color="#2563eb" style="background:#2563eb" title="靛蓝"></button>
+                <button class="color-btn" data-color="#059669" style="background:#059669" title="翠绿"></button>
+                <button class="color-btn" data-color="#d97706" style="background:#d97706" title="琥珀"></button>
+                <button class="color-btn" data-color="#7c3aed" style="background:#7c3aed" title="紫罗兰"></button>
+                <button class="color-btn" data-color="#ec4899" style="background:#ec4899" title="樱粉"></button>
+            </div>
+            <div class="custom-color-row">
+                <input type="color" id="custom-color" value="#1f2937" title="自定义颜色">
+                <span class="custom-label">自定义</span>
+            </div>
+        </div>
+
+        <!-- 纸张版式 -->
+        <div class="tool-section">
+            <div class="tool-label">纸张样式</div>
+            <div id="paper-type-btns" class="paper-type-btns">
+                <button class="paper-btn active" data-type="blank" title="空白纸">
+                    <div class="paper-preview blank-preview"></div>
+                    <span>空白</span>
+                </button>
+                <button class="paper-btn" data-type="ruled" title="横线纸">
+                    <div class="paper-preview ruled-preview"></div>
+                    <span>横线</span>
+                </button>
+                <button class="paper-btn" data-type="grid" title="网格纸">
+                    <div class="paper-preview grid-preview"></div>
+                    <span>网格</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 智能磁吸 -->
+        <div class="tool-section">
+            <div class="tool-label">辅助对齐</div>
+            <button id="snap-toggle" class="sound-toggle" title="手绘时磁吸到底纹参考线上">
+                <span class="snap-icon">🧲</span>
+                <span class="snap-text">磁吸对齐: 关</span>
+            </button>
+        </div>
+
+        <!-- 音效开关 -->
+        <div class="tool-section">
+            <div class="tool-label">音效</div>
+            <button id="sound-toggle" class="sound-toggle" title="切换音效">
+                <span class="sound-icon">🔊</span>
+                <span class="sound-text">开启</span>
+            </button>
+        </div>
+
+        <!-- 提醒与通知设置 -->
+        <div class="tool-section last">
+            <div class="tool-label">流笺提醒</div>
+            <div class="notify-control-group" style="display: flex; flex-direction: column; gap: 6px;">
+                <button id="notify-toggle" class="sound-toggle" title="切换通知总开关">
+                    <span class="notify-icon">🔔</span>
+                    <span class="notify-text">通知: 开启</span>
+                </button>
+                <button id="push-permission-btn" class="sound-toggle" title="请求浏览器通知权限">
+                    <span class="push-icon">💬</span>
+                    <span class="push-text">授权浏览器通知</span>
+                </button>
+                <div class="discord-input-wrapper" style="width: 100%;">
+                    <input type="text" id="discord-userid-input" placeholder="Discord UserID 绑定" class="discord-input" title="用于网页离线时的 Discord 私信提醒">
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Z100: 全新垂直排队 Toast 容器 (防叠加多通知排队系统) -->
+    <div id="toast-container"></div>
+
+
+    <!-- Z110: 网页启动・待办汇总弹窗 -->
+    <div id="todo-summary-modal" class="todo-modal-backdrop hidden">
+        <div class="todo-modal-content">
+            <div class="todo-modal-header">
+                <span class="todo-modal-title">📝 近期流笺待办</span>
+                <button class="todo-modal-close" id="todo-summary-close-btn" aria-label="关闭">&times;</button>
+            </div>
+            <div class="todo-modal-body" id="todo-summary-body-text">
+                正在为您整理待办事项，请稍候...
+            </div>
+            <div class="todo-modal-footer">
+                <button class="todo-modal-btn" id="todo-summary-ack-btn">我知道啦 😊</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Z70: 右下角背景切换按钮与弹出面板 -->
+    <div id="theme-control">
+        <!-- 音乐播放按钮 (和theme-btn一样同系列Flow玻璃质感，位于其上方) -->
+        <button id="music-btn" aria-label="播放背景音乐" title="播放背景音乐">
+            <span class="material-symbols-outlined music-icon">music_note_2</span>
+        </button>
+        <button id="theme-btn" aria-label="切换背景" title="切换背景">
+            <span class="material-symbols-outlined theme-icon">wallpaper_slideshow</span>
+        </button>
+        <div id="theme-menu">
+            <div class="theme-menu-header">
+                <span id="theme-menu-title">选择时光壁纸</span>
+                <button id="lang-btn" aria-label="Switch Language" title="Switch Language">
+                    <span class="material-symbols-outlined lang-icon">language</span>
+                    <span class="lang-text">EN</span>
+                </button>
+            </div>
+            <div class="theme-options">
+                <button class="theme-opt" data-theme="ice-inspiration">
+                    <span class="theme-preview ice-inspiration-preview">🗒️</span>
+                    <span class="theme-name">冰扉灵感</span>
+                </button>
+                <button class="theme-opt" data-theme="warm-oat">
+                    <span class="theme-preview warm-oat-preview"></span>
+                    <span class="theme-name">燕麦暖白</span>
+                </button>
+                <button class="theme-opt" data-theme="fog-blue">
+                    <span class="theme-preview fog-blue-preview"></span>
+                    <span class="theme-name">莫兰迪蓝</span>
+                </button>
+                <button class="theme-opt" data-theme="spring-green">
+                    <span class="theme-preview spring-green-preview"></span>
+                    <span class="theme-name">春日奶绿</span>
+                </button>
+                <button class="theme-opt" data-theme="minimal-white">
+                    <span class="theme-preview minimal-white-preview"></span>
+                    <span class="theme-name">极简纯白</span>
+                </button>
+                <button class="theme-opt" data-theme="deep-drift">
+                    <span class="theme-preview deep-drift-preview"></span>
+                    <span class="theme-name">经典深邃</span>
+                </button>
+                <button class="theme-opt" data-theme="custom-glass">
+                    <span class="theme-preview custom-glass-preview">🔮</span>
+                    <span class="theme-name">自定义玻璃</span>
+                </button>
+            </div>
+
+            <!-- 自定义背景控制板块 -->
+            <div id="custom-bg-controls" class="hidden">
+                <div class="custom-bg-back-row">
+                    <button id="custom-bg-back-btn" class="back-btn" title="返回壁纸列表">
+                        <span class="material-symbols-outlined back-icon">arrow_back</span>
+                        <span class="btn-text">返回</span>
+                    </button>
+                    <span class="sub-menu-title">
+                        <span class="material-symbols-outlined menu-title-icon">auto_awesome</span>
+                        <span class="title-text">自定义玻璃气象</span>
+                    </span>
+                </div>
+                <div class="control-divider"></div>
+                
+                <div class="control-row">
+                    <button id="custom-bg-upload-btn" class="control-btn" title="选择本地 JPG/PNG 图像">
+                        <span class="material-symbols-outlined upload-icon">image</span>
+                        <span class="btn-text">上传图片</span>
+                    </button>
+                    <input type="file" id="custom-bg-upload" accept="image/*" class="hidden">
+                </div>
+
+                <div class="control-row glass-toggles">
+                    <button class="glass-style-btn active" data-style="frosted" title="毛玻璃：质感厚重">毛玻璃</button>
+                    <button class="glass-style-btn" data-style="translucent" title="通透：质感清亮">通透玻璃</button>
+                    <button class="glass-style-btn" data-style="liquid" title="液态：晶莹通透，流光溢彩">液态玻璃</button>
+                </div>
+
+                <!-- 微型气象模拟控制 -->
+                <div class="control-divider"></div>
+                <div class="weather-controls-section">
+                    <span class="weather-title">
+                        <span class="material-symbols-outlined weather-title-icon">partly_cloudy_day</span>
+                        <span class="title-text">窗外环境模拟</span>
+                    </span>
+                    <div class="custom-select-group">
+                        <div class="custom-select-wrapper" id="weather-time-wrapper">
+                            <div class="custom-select-trigger" id="weather-time-trigger" title="时间环境段">
+                                <span class="trigger-text">
+                                    <span class="material-symbols-outlined select-opt-icon">sync</span>
+                                    <span class="opt-text">自动时间</span>
+                                </span>
+                                <span class="trigger-arrow">◀</span>
+                            </div>
+                            <div class="custom-select-dropdown">
+                                <div class="custom-select-opt" data-value="auto">
+                                    <span class="material-symbols-outlined select-opt-icon">sync</span>
+                                    <span class="opt-text">自动时间</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="sunrise">
+                                    <span class="material-symbols-outlined select-opt-icon">wb_twilight</span>
+                                    <span class="opt-text">柔和日出</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="morning">
+                                    <span class="material-symbols-outlined select-opt-icon">light_mode</span>
+                                    <span class="opt-text">清晨明亮</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="noon">
+                                    <span class="material-symbols-outlined select-opt-icon">sunny</span>
+                                    <span class="opt-text">烈日当空</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="sunset">
+                                    <span class="material-symbols-outlined select-opt-icon">wb_twilight</span>
+                                    <span class="opt-text">绝美日落</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="night">
+                                    <span class="material-symbols-outlined select-opt-icon">nightlight</span>
+                                    <span class="opt-text">幽蓝深夜</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="custom-select-wrapper" id="weather-state-wrapper">
+                            <div class="custom-select-trigger" id="weather-state-trigger" title="气象类型">
+                                <span class="trigger-text">
+                                    <span class="material-symbols-outlined select-opt-icon">sync</span>
+                                    <span class="opt-text">自动天气</span>
+                                </span>
+                                <span class="trigger-arrow">◀</span>
+                            </div>
+                            <div class="custom-select-dropdown">
+                                <div class="custom-select-opt" data-value="auto">
+                                    <span class="material-symbols-outlined select-opt-icon">sync</span>
+                                    <span class="opt-text">自动天气</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="clear">
+                                    <span class="material-symbols-outlined select-opt-icon">sunny</span>
+                                    <span class="opt-text">晴空万里</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="cloudy">
+                                    <span class="material-symbols-outlined select-opt-icon">cloud</span>
+                                    <span class="opt-text">烟雨微阴</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="rainy">
+                                    <span class="material-symbols-outlined select-opt-icon">rainy</span>
+                                    <span class="opt-text">细雨微滑</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="heavy-rain">
+                                    <span class="material-symbols-outlined select-opt-icon">rainy</span>
+                                    <span class="opt-text">暴雨倾盆</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="thunderstorm">
+                                    <span class="material-symbols-outlined select-opt-icon">thunderstorm</span>
+                                    <span class="opt-text">电闪雷鸣</span>
+                                </div>
+                                <div class="custom-select-opt" data-value="sun-shower">
+                                    <span class="material-symbols-outlined select-opt-icon">partly_cloudy_day</span>
+                                    <span class="opt-text">太阳金雨</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 环境音效开关 -->
+                        <button id="weather-sound-toggle" class="weather-sound-btn" title="开启/关闭窗外环境白噪音">
+                            <span class="material-symbols-outlined btn-icon">volume_up</span>
+                            <span class="btn-text">窗外环境音：开启</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐式 SVG 滤波器定义 (用于实现超拟物纸张墨水物理扩散洇染) -->
+    <svg style="position: absolute; width: 0; height: 0;" width="0" height="0" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="ink-bleed">
+                <!-- 建立分形噪点底图，增加波频以凸显粗糙的纸张纤维 -->
+                <feTurbulence type="fractalNoise" baseFrequency="0.065" numOctaves="2" result="noise" />
+                <!-- 增大位移比例至 3.8，使笔迹边缘产生显著的无规则毛细孔扩散 (洇开效果) -->
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.8" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                <!-- 稍微调大高斯模糊，还原饱满的哑光水分蒸发扩散感 -->
+                <feGaussianBlur in="displaced" stdDeviation="0.75" result="blurred" />
+                <!-- 将毛糙扩散层与原矢量图形合并 -->
+                <feMerge>
+                    <feMergeNode in="SourceGraphic" />
+                    <feMergeNode in="blurred" />
+                </feMerge>
+            </filter>
+        </defs>
+    </svg>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Logs and Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Runtime & Temporary files
+scratch/
+.temp/
+.cache/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Vercel & Build outputs
+.vercel
+dist/
+build/

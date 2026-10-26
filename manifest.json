@@ -1,0 +1,24 @@
+{
+  "name": "StickyFlow · 流笺",
+  "short_name": "StickyFlow",
+  "description": "365张年度限定治愈系流笺 — 不可逆的纸笔记录，全物理拟物手势交互，沉浸式流体UI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1c24",
+  "theme_color": "#1a1c24",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
